@@ -37,12 +37,9 @@ using ::android::hardware::Void;
 
 PictureAdjustment::PictureAdjustment(std::shared_ptr<SDMController> controller)
     : controller_(std::move(controller)) {
-    if (!isReady()) {
-        LOG(FATAL) << "PictureAdjustment backend not ready, exiting.";
-    }
 }
 
-bool PictureAdjustment::isReady() {
+bool PictureAdjustment::isSupported() {
     static int supported = -1;
 
     if (supported >= 0) {

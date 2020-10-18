@@ -23,8 +23,6 @@
 #include "livedisplay/sdm/DisplayModes.h"
 
 #include <android-base/logging.h>
-#include <android/hidl/manager/1.0/IServiceManager.h>
-#include <hidl/ServiceManagement.h>
 
 #include "livedisplay/sdm/Utils.h"
 
@@ -39,10 +37,6 @@ using ::android::hardware::Void;
 
 DisplayModes::DisplayModes(std::shared_ptr<SDMController> controller)
     : controller_(std::move(controller)) {
-    if (!isReady()) {
-        LOG(FATAL) << "DisplayModes backend not ready, exiting.";
-    }
-
 #ifdef LIVES_IN_SYSTEM
     DisplayMode mode = getDefaultDisplayModeInternal();
     if (mode.id >= 0) {
@@ -51,22 +45,7 @@ DisplayModes::DisplayModes(std::shared_ptr<SDMController> controller)
 #endif
 }
 
-bool DisplayModes::isSupported(const hidl_string& name) {
-    using ::android::hidl::manager::V1_0::IServiceManager;
-    auto sm = ::android::hardware::defaultServiceManager();
-    /*
-     * We MUST NOT use DisplayModes::isReady to check the availability here,
-     * but check the existence in manifest instead. Because in certain cases
-     * QDCM backend might fail to initialize thus isReady would return false,
-     * even though the device does support the feature and the interface is
-     * declared in manifest. Under the circumstance, the HAL will abort and
-     * hopefully recover from the failure when started again.
-     */
-    auto transport = sm->getTransport(descriptor, name);
-    return transport != IServiceManager::Transport::EMPTY;
-}
-
-bool DisplayModes::isReady() {
+bool DisplayModes::isSupported() {
     static int supported = -1;
 
     if (supported >= 0) {
